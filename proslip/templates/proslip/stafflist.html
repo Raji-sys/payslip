@@ -1,0 +1,73 @@
+{%extends "base.html" %}
+{% block title %}staff list{% endblock%}
+{% block content %}
+
+{%for i in p%}
+    
+{%endfor%}
+<div class="flex justify-items-center text-center text-gray-800 font-medium text-sm align-middle items-center p-3 mt-11 bg-white border-b border-gray-100 shadow-2xl">
+    <h1 class="">list of items</h1>
+        <a href="{%url 'create_item'%}" class="focus:opacity-10 bg-zinc-600 p-2 px-4 rounded-2xl ml-2"><i class="text-white fa-solid fa-plus fa-lg "></i></a>
+        <a href="{%url 'item_report' %}" class="focus:opacity-10 bg-zinc-600 p-2 px-4 rounded-2xl ml-2"><i class="text-white fa-solid fa-file fa-lg"></i></a>
+</div>
+<div class="p-1 max-sm:p-1 text-sm rounded-2xl text-center mt-6">    
+    <table class="table-auto max-sm:flex flex rounded-2xl items-center justify-center">
+        <tbody class="bg-white border-1 shadow-2xl rounded-2xl max-sm:p-3 p-2 overflow-x-auto border-zinc-700">
+            <div class="flex justify-center items-center gap-3">
+            </div>
+            <tr class="text-xs bg-zinc-600 text-white">
+                <th scope="col" class=" p-3">NAME</th>
+                <th scope="col" class=" p-3">FILE NUMBER</th>
+                <th scope="col" class=" p-3">IPPIS NUMBER</th>
+                <th scope="col" class=" p-3">PHONE NUMBER</th>
+                <th scope="col" class=" p-3">PROFILE</th>
+            </tr>
+            {% for i in po %}
+        <tr class="text-xs {% cycle 'bg-white hover:bg-zinc-200' 'bg-zinc-100 hover:bg-zinc-200' %} border-b border-zinc-700">
+            <td class="border-1 border-zinc-700 p-3 text-center">
+            {{i.full_name|default_if_none:''}}
+            </td>
+            <td class="border-1 border-zinc-700 p-3 text-center">
+            {{i.file_no|default_if_none:''}}
+            </td>
+            <td class="border-1 border-zinc-700 p-3 text-center">
+            {{i.ippis_no|default_if_none:''}}
+            </td>
+            <td class="border-1 border-zinc-700 p-1 text-center">
+            {{i.phone_no|default_if_none:''}} 
+            </td>
+            <td class="border-1 border-zinc-700 p-1 text-center">
+            {{i.phone_no|default_if_none:''}} 
+            </td>
+            <td class="border-1 border-zinc-700 p-1 text-center">
+            <a href={{i.get_absolute_url}}>open</a> 
+            </td>
+            </tr>
+            {%endfor%} 
+        <tr class="">
+            <td class="p-3 text-center">        
+       <div class="pagination flex justify-between ">
+            <span class="flex items-center">
+                {% if po.has_previous %}
+                <a href="?page=1" class="p-2 px-2 rounded-lg bg-zinc-600 text-white mr-2"><i class="fa-solid fa-angle-double-left fa-lg"></i></a>
+                <a href="?page={{po.previous_page_number}}" class="p-2 px-2 rounded-lg bg-zinc-600 text-white"><i class="fa-solid fa-angle-left fa-lg"></i></a>
+                {% endif %}
+            </span>
+                <span class="text-sm text-gray-700 m-2 font-semibold">
+                    {{po.number}}-{{po.paginator.num_pages}}
+                </span>
+                <span class="flex item-center">
+                    {% if po.has_next %}
+                    <a href="?page={{po.next_page_number}}" class="p-2 px-2 rounded-lg bg-zinc-600 text-white mr-2"><i class="fa-solid fa-angle-right fa-lg"></i></a>
+                    <a href="?page={{po.paginator.num_pages}}" class="p-2 px-2 rounded-lg bg-zinc-600 text-white"><i class="fa-solid fa-angle-double-right fa-lg"></i></a>
+                    {% endif %}
+                </span>
+            </div>
+
+        </td>
+        </tr>
+</tbody>
+</table>
+</div>     
+{% endblock %}
+

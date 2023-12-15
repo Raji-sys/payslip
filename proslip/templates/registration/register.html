@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create an account{% endblock %}
+{% block content %}
+<div class="flex justify-center">    
+    <div class="font-semibold uppercase text-xs shadow-2xl sm:max-w-lg mx-auto md:p-8 overflow-hidden rounded-2xl bg-white mt-16">
+    <section class="text-center border-b-2 border-green-800 p-2 m-2">
+          <p class="bg-gradient-to-r from-green-700 via-green-500 to-green-700 text-transparent bg-clip-text text-sm font-bold pt-2">fill this form to create your account</p>
+     </section>
+  <form method="POST"> 
+      {% csrf_token %}
+              <div class="flex justify-center text-md text-red-500">
+          {% if user_form.errors %}
+          {{user_form.errors}}
+          {% endif %}
+        </div>
+     <div class="flex justify-center text-md text-blue-500">
+          {% if messages %}
+          {%for m in messages%}
+         <p{% if m.tags%} class="{{m.tags}}"{%endif%}>{{m}}</p>
+         {%endfor%}
+          {% endif %}
+        </div>
+      <div class="mb-1 mt-2 uppercase text-gray-600">
+          <div class="flex justify-center">
+            <label for="username">username</label>
+          </div>
+          <p class="flex justify-center mb-4">
+          <input
+            id="username"
+            class="text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl"
+            type="text"
+            name="username"
+          />
+        </p>
+        <div class="flex justify-center">
+          <label for="email">email</label>
+        </div>
+        <p class="flex justify-center mb-4">
+          <input
+            id="email"
+            class="text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl"
+            type="text"
+            name="email"
+          />
+        </p>
+        <div class="flex justify-center">
+          <label for="last_name">last name</label>
+        </div>
+        <p class="flex justify-center mb-4">
+          <input
+            class="text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl"
+            type="text"
+            name="last_name"
+            id="last_name"
+          />
+        </p>
+        <div class="flex justify-center">
+          <label for="first_name">first name</label>
+        </div>
+        <p class="flex justify-center mb-4">
+          <input
+            class="text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl"
+            type="text"
+            name="first_name"
+            id="first_name"
+          />
+        </p>
+        <div class="flex justify-center">
+          <label for="password1">password </label>
+        </div>
+        <p class="flex justify-center mb-4">
+          <input
+            class="text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl"
+            type="password"
+            name="password1"
+            id="password1"
+          />
+        </p>
+   
+        <div class="flex justify-center">
+          <label for="password2">confirm password </label>
+        </div>
+        <p class="flex justify-center mb-4">
+          <input
+            class="text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl"
+            type="password"
+            name="password2"
+            id="password2"
+          />
+        </p>
+<div class="flex justify-center">	
+    <input class="focus:opacity-10 uppercase focus:border-green-600
+         bg-gradient-to-r from-green-700 via-green-500 to-green-700 text-white p-2 rounded shadow-lg hover:shadow-xl " type="submit" value="register">
+</div>
+  </form>
+</div>
+</div>
+  {% endblock %}

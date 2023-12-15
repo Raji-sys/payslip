@@ -1,0 +1,23 @@
+{%extends "base.html" %}
+{% block title %}personal details update form{% endblock%}
+{% block content %}
+      <p class="mt-20">personal details update form</p> 
+         <div class="flex justify-center text-md text-blue-500">
+          {% if messages %}
+          {%for m in messages%}
+         <p {% if m.tags%} class="{{m.tags}}"{%endif%}>{{m}}</p>
+           {%endfor%}
+          {% endif %}
+        </div>
+<form action="" method="POST" >
+
+    {% csrf_token %}
+             {{form.as_p}}
+        <div>
+          <button type="submit" >
+            submit
+          </button>
+        </div>
+</form>
+
+{% endblock %}

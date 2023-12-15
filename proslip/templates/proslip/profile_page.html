@@ -1,0 +1,30 @@
+{%extends "base.html" %}
+
+{% block title %}profile{% endblock%}
+
+{% block content %}
+   <div class="flex justify-center text-md text-blue-500">
+          {% if messages %}
+          {%for m in messages%}
+         <p {% if m.tags%} class="{{m.tags}}"{%endif%}>{{m}}</p>
+           {%endfor%}
+          {% endif %}
+        </div>
+  <h1 class="text-xl text-black text-center p-2 shadow-sm rounded-xl mt-20 ">{{profile.user.get_full_name|default_if_none:''|upper}} </h1>
+<h1>
+  {%if not profile.file_no %}
+  <a href="{%url 'doc' profile.user.pk %}">start documentation</a>
+  {%endif%}
+</h1>
+<p>
+  dob:{{profile.dob|default_if_none:''}}
+</p>
+<p>
+  file number:{{profile.file_no|default_if_none:''}}
+</p>
+
+<p>post:{{govapp.cpost}}</p>
+<a href="{%url 'update_user' profile.user.pk %}">update user</a>
+<a href="{%url 'update_profile' profile.pk %}">update profile</a>
+<a href="{%url 'update_govapp' profile.pk %}">update govt appt</a>
+{% endblock %}

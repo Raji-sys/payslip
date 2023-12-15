@@ -1,0 +1,40 @@
+{% load static %}
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+  {% tailwind_css %}
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="stylesheet" href="{% static 'fontawesomefree/css/fontawesome.css' %}" type='text/css'>
+		<link rel="stylesheet" href="{% static 'fontawesomefree/css/solid.css' %}" type='text/css'>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+</head>
+<body class="uppercase  bg-white ">
+		<header class="">
+		<nav class="mx-auto p-1 flex justify-between uppercase text-white text-xs fixed top-0 z-10  border-b-2 border-teal-800 w-full bg-gradient-to-r from-teal-700 via-teal-500 to-teal-700">
+			{%if request.user.is_authenticated %}
+		<span class="p-2"> <a href="{%url 'index' %}">home</a>
+	</span>
+	{%if request.path != '/' %}
+	<span class="p-2">
+	</span>
+	{% endif %}
+	{% endif %}
+		<span class="p-2 font-light mb-1">
+			{% if request.user.is_authenticated %}
+ 		    <a href="{% url 'logout'  %}" class="mt-2 focus:opacity-10 bg-red-600 text-white p-2 hover:bg-white hover:text-red-600 hover:border-2 hover:border-red-600 rounded shadow-lg hover:shadow-xl w-1/2 text-xs">
+			<i class="fa-solid fa-xmark fa-lg"></i><span class="ml-2">logout</span></a>
+			 {% else %}
+				 {%if request.path != '/login/' %}
+			<a href="{% url 'login' %}" class="focus:opacity-10 hover:bg-gray-50 hover:text-zinc-700 hover:border-2 hover:border-teal-600 bg-white text-teal-500 p-2 rounded shadow-lg hover:shadow-xl w-1/2 text-xs">
+			<i class="fa-solid fa-arrow-right-to-bracket fa-lg"></i><span class="ml-2">login</span></a>
+			{% endif %}
+			{% endif %}
+    	</span>
+	</nav>
+	</header>
+    {% block content %}
+	{% endblock %}
+</body>
+</html>
