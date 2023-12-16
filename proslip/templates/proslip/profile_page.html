@@ -26,4 +26,17 @@
 <p>post:{{govapp.cpost}}</p>
 <a href="{%url 'update_user' profile.user.pk %}">update user</a>
 <a href="{%url 'update_profile' profile.pk %}">update profile</a>
+
+<h1>payslip</h1>
+{%if payslips%}
+<ul>
+  {%for i payslips %}
+  <li>
+    <a href="{{i.file.url}}" target="_blank">View or Download Payslip - {{i.month|date:"F Y"}}</a>
+  </li>
+  {%endfor%}
+</ul>
+{%else%}
+<p>no payslips avaialalbe</p>
+{%endif%}
 {% endblock %}

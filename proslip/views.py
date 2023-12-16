@@ -175,18 +175,22 @@ class UpdateProfileView(UpdateView):
 
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class ProfilePageView(DetailView):
-    def get(self, request, *args, **kwargs):
-        try:
-            if request.user.is_superuser:
-                username_from_url = kwargs.get('username')
-                profile = get_object_or_404(Profile, user__username=username_from_url)
-            else:
-                profile = request.user.profile        
-        except Http404:
-            profile=None
-        context = {'profile': profile}
-        return render(request, 'proslip/profile_page.html', context)
+    model=Profile
+    template_name='proslip/profile_page.html'
 
+    def get_context_data(self, **kwargs):
+        context=super().get_context_data(**kwargs)
+
+        if self.request.user.is_superuser:
+            username_from_url=self.kwargs.get('username')
+            context['profile']=get_object_or_404(Profile,user__username=username_from_url)
+        else:
+            context['profile']=self.request.user.profile
+
+        payslips=Payslip.objects.filter(profile=context['profile'])
+        context['payslips']=payslips
+        
+        return context
 
 
 @method_decorator(superuser_required,name='dispatch')
