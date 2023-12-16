@@ -17,22 +17,16 @@
   {%endif%}
 </h1>
 <p>
-  dob:{{profile.dob|default_if_none:''}}
-</p>
-<p>
   file number:{{profile.file_no|default_if_none:''}}
 </p>
 
-<p>post:{{govapp.cpost}}</p>
-<a href="{%url 'update_user' profile.user.pk %}">update user</a>
-<a href="{%url 'update_profile' profile.pk %}">update profile</a>
 
 <h1>payslip</h1>
-{%if payslips%}
+{%if payslips %}
 <ul>
-  {%for i payslips %}
+  {%for i in payslips %}
   <li>
-    <a href="{{i.file.url}}" target="_blank">View or Download Payslip - {{i.month|date:"F Y"}}</a>
+    <a href="{{i.file.url}}" target="_blank">View or Download Payslip</a>
   </li>
   {%endfor%}
 </ul>

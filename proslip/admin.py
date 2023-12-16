@@ -15,7 +15,7 @@ admin.site.site_title="PRO PAYSLIP"
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     # form=ProfileForm
-    readonly_fields=['ippis_no',]
+    # readonly_fields=['ippis_no',]
     list_display = ['full_name','file_no','ippis_no','dept_or_unit','phone_no']
     list_filter = ['dept_or_unit']
     search_fields = ['dept_or_unit']

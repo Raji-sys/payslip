@@ -11,7 +11,6 @@ from .models import Profile
 from .forms import *
 from proslip.filters import ProfileFilter
 from django.contrib.auth import get_user_model
-from django.http import Http404
 from django.views import View
 from .script import process_payslip
 from django.conf import settings
@@ -39,10 +38,13 @@ class PayslipUploadView(View):
                     destination.write(chunk)
             
             process_payslip(file_path)
-            return redirect('success_page')
+            return redirect('success')
         else:
             return render(request,self.template_name, {'form':form})
 
+
+def success(request):
+    return render(request,'success.html')
 
 def log_required(view_function, redirect_to=None):
     if redirect_to is None:
@@ -57,7 +59,7 @@ def reg_required(view_function, redirect_to=None):
 def superuser_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated or not request.user.is_superuser:
-            return render(request,'access-denied.html')
+            return render(request,'access_denied.html')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -125,51 +127,51 @@ class DocView(UpdateView):
             return self.form_invalid(form)
 
 
-@method_decorator(login_required(login_url='login'), name='dispatch')
-class UpdateUserView(UpdateView):
-    model=User
-    template_name= 'proslip/update_user.html'
-    form_class=UserForm
-    success_url=reverse_lazy('profile_page')
+# @method_decorator(login_required(login_url='login'), name='dispatch')
+# class UpdateUserView(UpdateView):
+#     model=User
+#     template_name= 'proslip/update_user.html'
+#     form_class=UserForm
+#     success_url=reverse_lazy('profile_page')
 
-    def get_success_url(self):
-        return reverse_lazy('profile_page', kwargs={'username': self.object.username})
+#     def get_success_url(self):
+#         return reverse_lazy('profile_page', kwargs={'username': self.object.username})
 
-    def form_valid(self,form):
-        if form.is_valid():
-            form.save()
-            messages.success(self.request, 'User Information Updated Successfully')
-            return super().form_valid(form)
-        else:
-            return self.form_invalid(form)
+#     def form_valid(self,form):
+#         if form.is_valid():
+#             form.save()
+#             messages.success(self.request, 'User Information Updated Successfully')
+#             return super().form_valid(form)
+#         else:
+#             return self.form_invalid(form)
 
-    def form_invalid(self,form):
-        messages.error(self.request,'Please Correct the error')
-        return self.render_to_response(self.get_context_data(form=form))
+#     def form_invalid(self,form):
+#         messages.error(self.request,'Please Correct the error')
+#         return self.render_to_response(self.get_context_data(form=form))
 
 
 
-@method_decorator(login_required(login_url='login'), name='dispatch')
-class UpdateProfileView(UpdateView):
-    model=Profile
-    template_name = 'proslip/update_profile.html'
-    form_class=ProfileForm
-    success_url=reverse_lazy('profile_page')
+# @method_decorator(login_required(login_url='login'), name='dispatch')
+# class UpdateProfileView(UpdateView):
+#     model=Profile
+#     template_name = 'proslip/update_profile.html'
+#     form_class=ProfileForm
+#     success_url=reverse_lazy('profile_page')
 
-    def get_success_url(self):
-        return reverse_lazy('profile_page', kwargs={'username': self.object.user})
+#     def get_success_url(self):
+#         return reverse_lazy('profile_page', kwargs={'username': self.object.user})
 
-    def form_valid(self,form):
-        if form.is_valid():
-            form.save()
-            messages.success(self.request, 'User Information Updated Successfully')
-            return super().form_valid(form)
-        else:
-            return self.form_invalid(form)
+#     def form_valid(self,form):
+#         if form.is_valid():
+#             form.save()
+#             messages.success(self.request, 'User Information Updated Successfully')
+#             return super().form_valid(form)
+#         else:
+#             return self.form_invalid(form)
 
-    def form_invalid(self,form):
-        messages.error(self.request,'Please Correct the error')
-        return self.render_to_response(self.get_context_data(form=form))
+#     def form_invalid(self,form):
+#         messages.error(self.request,'Please Correct the error')
+#         return self.render_to_response(self.get_context_data(form=form))
 
 
 
@@ -177,6 +179,8 @@ class UpdateProfileView(UpdateView):
 class ProfilePageView(DetailView):
     model=Profile
     template_name='proslip/profile_page.html'
+    slug_field = 'user__username'  # Specify the field to use for the slug
+    slug_url_kwarg = 'username'  # Specify the parameter name from the URL
 
     def get_context_data(self, **kwargs):
         context=super().get_context_data(**kwargs)
@@ -189,7 +193,6 @@ class ProfilePageView(DetailView):
 
         payslips=Payslip.objects.filter(profile=context['profile'])
         context['payslips']=payslips
-        
         return context
 
 

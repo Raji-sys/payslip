@@ -32,9 +32,9 @@ class Profile(models.Model):
 
 
 class Payslip(models.Model):
-    profile=models.OneToOneField(Profile, on_delete=models.CASCADE)
+    profile=models.ForeignKey(Profile, on_delete=models.CASCADE)
     month=models.DateField()
     year=models.DateField()
 
     def __str__(self):
-        return f"{self.profile.full_name} - {self.profile.ippis_no} - {self.month.strftime('%B %Y')}"
+        return f"{self.profile.full_name} - {self.profile.ippis_no}"
