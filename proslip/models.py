@@ -18,7 +18,7 @@ class Profile(models.Model):
         ('PHYSIOTHERAPHY','PHYSIOTHERAPHY'),('PROSTHETIC AND ORTHOTICS','PROSTHETIC AND ORTHOTICS'),('PROCUMENT','PROCUMENT'),('PUBLIC HEALTH','PUBLIC HEALTH'),
         ('OCCUPATIONAL THERAPHY','OCCUPATIONAL THERAPHY'),('RADIOLOGY','RADIOLOGY'),('SERVICOM','SERVICOM'),('SOCIAL WELFARE','SOCIAL WELFARE'),
         ('STORE','STORE'),('TELEPHONE','TELEPHONE'),('TRANSPORT','TRANSPORT'),)
-    dept_or_unit=models.CharField('Department or Unit', choices=dep, blank=True, null=True)
+    dept_or_unit=models.CharField('Department or Unit', choices=dep, blank=True, null=True, max_length=300)
 
     def get_absolute_url(self):
         return reverse('profile_page', args=[self.user])

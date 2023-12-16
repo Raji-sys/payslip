@@ -6,13 +6,11 @@ from django.contrib.auth.models import User
 
 
 class CustomUserCreationForm(UserCreationForm):
-    middle_name = forms.CharField()
-    ippis_no=forms.NumberInput()
-    file_no=forms.NumberInput()
-    phone_no=forms.NumberInput()
+    middle_name = forms.CharField(required=False)
     class Meta:
         model = get_user_model()
         fields = ['username', 'first_name', 'last_name', 'password1', 'password2']
+        exclude=['email']
 
 
 class UserForm(forms.ModelForm):

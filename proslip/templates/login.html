@@ -6,56 +6,50 @@
 {% for m in messages %}
 {{m}}
 {%endfor%}
-            <div class="flex justify-center mt-20">
-      <div class="font-semibold uppercase text-xs shadow-2xl sm:max-w-lg mx-auto md:p-8 overflow-hidden rounded-xl bg-white mt-1  ">
-        <section class="text-center border-b-2 border-green-800 p-4 m-4">
-          <p class="text-green-500 text-sm font-bold pt-4">sign in to your account</p>
-     <div class="flex justify-center text-md text-red-500">
-          {% if form.errors %}
-          {{form.errors}}
-          {% endif %}
+<div class="mt-28">
+  <div class="font-semibold uppercase text-sm shadow-2xl sm:max-w-fit mx-auto md:p-4 overflow-hidden rounded-3xl bg-white">
+    <section class="text-center border-b-2 border-sky-800 p-4 m-2">
+      <p class="text-sky-500 text-md font-bold pt-2">Enter your login details</p>
+      <div class="flex justify-center text-md text-red-500">
+        {% if form.errors %}
+        {{form.errors}}
+        {% endif %}
+      </div>
+      <div class="flex justify-center text-md text-blue-500">
+        {% if messages %}
+          {% for m in messages %}
+          <p {% if m.tags %} class="{{m.tags}}" {% endif %}>{{m}}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </section>
+
+    <form action="" method="POST" class="text-center">
+      {% csrf_token %}
+      <div class="flex flex-col sm:flex-row gap-2 m-2 p-2 rounded-2xl items-center">
+        <label for="uname" class="text-center sm:w-1/4">Username</label>
+        <div class="w-full sm:w-3/4">
+          <input class="text-center text-sm focus:outline-none border border-sky-300 p-2 rounded shadow-lg hover:shadow-xl w-full" type="text" name="username" id="uname" />
         </div>
-     <div class="flex justify-center text-md text-blue-500">
-          {% if messages %}
-          {%for m in messages%}
-         <p {% if m.tags%} class="{{m.tags}}"{%endif%}>{{m}}</p>
-           {%endfor%}
-          {% endif %}
+
+        <label for="password" class="text-center sm:w-1/4">Password</label>
+        <div class="w-full sm:w-3/4">
+          <input class="text-center text-sm focus:outline-none border border-sky-300 p-2 rounded shadow-lg hover:shadow-xl w-full" type="password" name="password" id="password" />
         </div>
-      </section>
-        <form action="" method="POST" class="text-center">
-              {% csrf_token %}
-          <div class="mb-2 uppercase text-zinc-600">
-            <div class="flex justify-center">
-              <label for="uname">username</label>
-            </div>
-            <div class="flex justify-center mb-6">
-              <input class="text-center text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl" type="text" name="username" id="uname"/>
-            </div>
-            <div class="flex justify-center">
-              <label for="password">password </label>
-            </div>
-            <div class="flex justify-center mb-4">
-              <input class="text-center text-xs focus:outline-none border border-blue-300 p-3 rounded shadow-lg hover:shadow-xl" type="password" name="password" id="password"/>
-            </div>
-              <div class="flex justify-center align-middle">
-              <input type="submit" value="Login" class="focus:opacity-10 uppercase focus:border-green-600 hover:bg-white hover:text-green-600 hover:border-2 hover:border-green-600
-         bg-green-500 text-white py-2 px-6 rounded shadow-lg hover:shadow-xl">
-            </div>
-          </div>
-        </form>
-      <section class="text-center border-t-2 border-green-800 mt-4">
+
+        <div class="w-full sm:w-3/4 mx-auto sm:mt-0">
+          <input type="submit" value="Login" class="focus:opacity-10 uppercase focus:border-sky-600 hover:bg-white hover:text-sky-600 hover:border-2 hover:border-sky-600 bg-sky-500 text-white py-2 px-6 rounded shadow-2xl hover:shadow-xl">
+        </div>
+      </div>
+    </form>
+
+    <section class="text-center border-t-2 border-sky-800 mt-1">
       <div class="mt-2 flex items-center">
-        <p class="mt-4 text-green-800 text-xs">
-          <a
-            class="border-b-2 border-blue-600 text-sm text-bold text-blue-800 ml-1"
-            href="{%url 'register' %}"
-            >register</a
-          >
-          instead
+        <p class="mt-4 text-sky-800 text-sm">
+          <a class="focus:opacity-10 text-xs uppercase focus:border-sky-600 hover:bg-white border border-sky-600 text-sky-500 py-2 px-4 rounded-full shadow-2xl hover:shadow-xl" href="{%url 'register' %}">Register</a>
         </p>
       </div>
     </section>
-      </div>
   </div>
+</div>
 {% endblock %}

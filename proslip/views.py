@@ -42,7 +42,7 @@ class CustomLoginView(LoginView):
     template_name='login.html'
     def get_success_url(self):
         if self.request.user.is_superuser:
-            return reverse_lazy('index')
+            return reverse_lazy('list')
         else:
             return reverse_lazy('profile_page',args=[self.request.user.username])
 
@@ -71,11 +71,35 @@ class UserRegistrationView(CreateView):
             return self.form_invalid(form)
 
 
+class DocView(UpdateView):
+    model = User
+    template_name = 'doc.html'
+    form_class = UserForm
+    success_url = reverse_lazy('index')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profileform'] = ProfileForm(instance=self.object.profile)
+        return context
+
+    def form_valid(self, form):
+        userform=UserForm(self.request.POST, instance=self.object)
+        profileform = ProfileForm(self.request.POST, instance=self.object.profile)
+
+        if userform.is_valid() and profileform.is_valid():
+            userform.save()
+            profileform.save()
+            messages.success(self.request, f'Documentation was successful {self.request.user.last_name}')
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            messages.error(self.request, 'Please correct the errors')
+            return self.form_invalid(form)
+
 
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UpdateUserView(UpdateView):
     model=User
-    template_name= 'staff/update-user.html'
+    template_name= 'proslip/update_user.html'
     form_class=UserForm
     success_url=reverse_lazy('profile_page')
 
@@ -99,7 +123,7 @@ class UpdateUserView(UpdateView):
 @method_decorator(login_required(login_url='login'), name='dispatch')
 class UpdateProfileView(UpdateView):
     model=Profile
-    template_name = 'staff/update-profile.html'
+    template_name = 'proslip/update_profile.html'
     form_class=ProfileForm
     success_url=reverse_lazy('profile_page')
 
@@ -132,14 +156,14 @@ class ProfilePageView(DetailView):
         except Http404:
             profile=None
         context = {'profile': profile}
-        return render(request, 'staff/profile_page.html', context)
+        return render(request, 'proslip/profile_page.html', context)
 
 
 
 @method_decorator(superuser_required,name='dispatch')
 class StaffListView(ListView):
     model=Profile
-    template_name = 'proslip/staff_list.html'
+    template_name = 'proslip/stafflist.html'
     context_object_name = 'po'
     paginate_by = 10
 
@@ -147,8 +171,8 @@ class StaffListView(ListView):
         return Profile.objects.all().order_by('dept_or_unit')
 
 
-@method_decorator(superuser_required,name='dispatch')
-def item_report(request):
+@superuser_required
+def search(request):
     profilefilter=ProfileFilter(request.GET, queryset=Profile.objects.all().order_by('dept_or_unit'))    
     context = {'profilefilter': profilefilter}
     return render(request, 'proslip/search.html', context)
