@@ -15,6 +15,7 @@ from django.views import View
 from .script import process_payslip
 from django.conf import settings
 import os
+from django.http import HttpResponse
 User = get_user_model()
 
 
@@ -42,6 +43,28 @@ class PayslipUploadView(View):
         else:
             return render(request,self.template_name, {'form':form})
 
+class DownloadPDFView(View):
+    def get(self,request,*args, **kwargs):
+        user=request.user
+        if user.is_superuser or hasattr(User,'profile'):
+            if user.is_superuser:
+                profile=get_object_or_404(Profile,user__username=kwargs['username'])
+            else:
+                profile=user.profile
+            try:
+                payslip=Payslip.objects.get(profile=profile)
+                if payslip.file:
+                    response=HttpResponse(payslip.file.read(),content_type='application/pdf')
+                    response['Content-Disposition']=f'attachment; filename="{payslip.profile.ippis_no}_payslip.pdf"'
+                    return response
+                else:
+                    return HttpResponse("payslip has no association file")
+            except Payslip.DoesNotExist:
+                    return HttpResponse("payslip not found")
+        else:
+            return HttpResponse("User has no profile")
+
+
 
 def success(request):
     return render(request,'success.html')
@@ -62,7 +85,6 @@ def superuser_required(view_func):
             return render(request,'access_denied.html')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
-
 
 def index(request):
     return render(request, 'index.html')
@@ -193,6 +215,7 @@ class ProfilePageView(DetailView):
 
         payslips=Payslip.objects.filter(profile=context['profile'])
         context['payslips']=payslips
+        context['payslip_ids']=[payslip.id for payslip in payslips]
         return context
 
 

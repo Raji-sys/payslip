@@ -33,8 +33,7 @@ class Profile(models.Model):
 
 class Payslip(models.Model):
     profile=models.ForeignKey(Profile, on_delete=models.CASCADE)
-    month=models.DateField()
-    year=models.DateField()
-
+    file=models.FileField(upload_to='payslips/',null=True, blank=True)
     def __str__(self):
         return f"{self.profile.full_name} - {self.profile.ippis_no}"
+    
