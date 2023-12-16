@@ -55,7 +55,7 @@ class DownloadPDFView(View):
                 payslip=Payslip.objects.get(profile=profile)
                 if payslip.file:
                     response=HttpResponse(payslip.file.read(),content_type='application/pdf')
-                    response['Content-Disposition']=f'attachment; filename="{payslip.profile.ippis_no}_payslip.pdf"'
+                    response['Content-Disposition']=f"attachment; filename='{payslip.profile.ippis_no}_payslip.pdf'"
                     return response
                 else:
                     return HttpResponse("payslip has no association file")
