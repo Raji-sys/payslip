@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models 
 from django.urls import reverse
 
+
     
 class Profile(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
@@ -28,3 +29,12 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.user.username
+
+
+class Payslip(models.Model):
+    profile=models.OneToOneField(Profile, on_delete=models.CASCADE)
+    month=models.DateField()
+    year=models.DateField()
+
+    def __str__(self):
+        return f"{self.profile.full_name} - {self.profile.ippis_no} - {self.month.strftime('%B %Y')}"

@@ -12,7 +12,36 @@ from .forms import *
 from proslip.filters import ProfileFilter
 from django.contrib.auth import get_user_model
 from django.http import Http404
+from django.views import View
+from .script import process_payslip
+from django.conf import settings
+import os
 User = get_user_model()
+
+
+
+class PayslipUploadView(View):
+    template_name="proslip/upload_payslip.html"
+
+    def get(self,request):
+        form=PayslipUploadForm()
+        return render(request, self.template_name, {'form':form})
+
+    def post(self,request):
+        form=PayslipUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            payslip_file=request.FILES['payslip_file']
+            
+            file_path=os.path.join(settings.MEDIA_ROOT, 'uploaded_payslip', payslip_file.name)
+            
+            with open(file_path,'wb') as destination:
+                for chunk in payslip_file.chunks():
+                    destination.write(chunk)
+            
+            process_payslip(file_path)
+            return redirect('success_page')
+        else:
+            return render(request,self.template_name, {'form':form})
 
 
 def log_required(view_function, redirect_to=None):

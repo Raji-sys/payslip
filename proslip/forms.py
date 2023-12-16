@@ -23,3 +23,7 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = '__all__'
+
+
+class PayslipUploadForm(forms.Form):
+    payslip_file=forms.FileField(label='Upload Payslip PDF')
