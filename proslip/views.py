@@ -52,7 +52,7 @@ class ViewPdfView(View):
         if not request.user.is_superuser and request.user.profile != payslip.profile:
             raise PermissionDenied
         if payslip.file:
-            response=HttpResponse(payslip.file.read(),content_type='application/pdf')
+            response=FileResponse(payslip.file.read(),content_type='application/pdf')
             return response
         else:
             return HttpResponse("Payslip is not found")

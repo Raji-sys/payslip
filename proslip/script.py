@@ -37,7 +37,7 @@ def process_payslip(pdf_path):
             payslip_file_path = f'media/payslips/{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
             with open(payslip_file_path, 'wb') as payslip_file:
                 Pdf_writer.write(payslip_file)
-                # payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
+                payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
                 payslip_file.close()
 
             print(f"Payslip created for: {profile.user.get_full_name} (Page {page_num + 1})")
@@ -49,7 +49,7 @@ def process_payslip(pdf_path):
             payslip_file_path = f'media/payslips/{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
             with open(payslip_file_path, 'wb') as payslip_file:
                 Pdf_writer.write(payslip_file)
-                # payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
+                payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
                 payslip_file.close()
             print(f"Payslip updated for: {profile.user.get_full_name} (Page {page_num + 1})")
  
