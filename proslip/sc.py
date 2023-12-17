@@ -11,4 +11,3 @@ for page_num in pdfpages:
 with open('{0}_slip.pdf'.format(file_ext),'wb')as a:
     PdfWriter.write(a)
     a.close()
-
