@@ -21,46 +21,47 @@ User = get_user_model()
 
 
 class PayslipUploadView(View):
-    template_name="proslip/upload_payslip.html"
+    template_name = "proslip/upload_payslip.html"
 
-    def get(self,request):
-        form=PayslipUploadForm()
-        return render(request, self.template_name, {'form':form})
+    def get(self, request):
+        form = PayslipUploadForm()
+        return render(request, self.template_name, {'form': form})
 
-    def post(self,request):
-        form=PayslipUploadForm(request.POST, request.FILES)
+    def post(self, request):
+        form = PayslipUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            payslip_file=request.FILES['payslip_file']
-            
-            file_path=os.path.join(settings.MEDIA_ROOT, 'uploaded_payslip', payslip_file.name)
-            
-            with open(file_path,'wb') as destination:
+            payslip_file = request.FILES['payslip_file']
+
+            # Save the uploaded payslip file
+            file_path = f'media/payslips/{payslip_file.name}'
+            with open(file_path, 'wb') as destination:
                 for chunk in payslip_file.chunks():
                     destination.write(chunk)
-            
+
             process_payslip(file_path)
             return redirect('success')
         else:
-            return render(request,self.template_name, {'form':form})
+            return render(request, self.template_name, {'form': form})
+        
 
 class DownloadPDFView(View):
-    def get(self,request,*args, **kwargs):
-        user=request.user
-        if user.is_superuser or hasattr(User,'profile'):
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_superuser or hasattr(User, 'profile'):
             if user.is_superuser:
-                profile=get_object_or_404(Profile,user__username=kwargs['username'])
+                profile = get_object_or_404(Profile, user__username=kwargs['username'])
             else:
-                profile=user.profile
+                profile = user.profile
             try:
-                payslip=Payslip.objects.get(profile=profile)
+                payslip = Payslip.objects.get(profile=profile)
                 if payslip.file:
-                    response=HttpResponse(payslip.file.read(),content_type='application/pdf')
-                    response['Content-Disposition']=f"attachment; filename='{payslip.profile.ippis_no}_payslip.pdf'"
+                    response = HttpResponse(payslip.file.read(), content_type='application/pdf')
+                    response['Content-Disposition'] = f"attachment; filename='{payslip.profile.ippis_no}_payslip.pdf'"
                     return response
                 else:
-                    return HttpResponse("payslip has no association file")
+                    return HttpResponse("Payslip has no associated file")
             except Payslip.DoesNotExist:
-                    return HttpResponse("payslip not found")
+                return HttpResponse("Payslip not found")
         else:
             return HttpResponse("User has no profile")
 
