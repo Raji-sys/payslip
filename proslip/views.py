@@ -15,7 +15,8 @@ from django.views import View
 from .script import process_payslip
 from django.conf import settings
 import os
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, FileResponse
 User = get_user_model()
 
 
@@ -33,7 +34,7 @@ class PayslipUploadView(View):
             payslip_file = request.FILES['payslip_file']
 
             # Save the uploaded payslip file
-            file_path = f'media/payslips/{payslip_file.name}'
+            file_path = f'media/uploaded_payslip/{payslip_file.name}'
             with open(file_path, 'wb') as destination:
                 for chunk in payslip_file.chunks():
                     destination.write(chunk)
@@ -43,6 +44,20 @@ class PayslipUploadView(View):
         else:
             return render(request, self.template_name, {'form': form})
         
+
+class ViewPdfView(View):
+    def get(self,request,payslip_id,*args,**kwargs):
+        payslip=get_object_or_404(Payslip, id=payslip_id)
+
+        if not request.user.is_superuser and request.user.profile != payslip.profile:
+            raise PermissionDenied
+        if payslip.file:
+            response=HttpResponse(payslip.file.read(),content_type='application/pdf')
+            return response
+        else:
+            return HttpResponse("Payslip is not found")
+
+
 
 class DownloadPDFView(View):
     def get(self, request, *args, **kwargs):
@@ -55,8 +70,8 @@ class DownloadPDFView(View):
             try:
                 payslip = Payslip.objects.get(profile=profile)
                 if payslip.file:
-                    response = HttpResponse(payslip.file.read(), content_type='application/pdf')
-                    response['Content-Disposition'] = f"attachment; filename='{payslip.profile.ippis_no}_payslip.pdf'"
+                    response = FileResponse(payslip.file, content_type='application/pdf')
+                    response['Content-Disposition'] = f"attachment; filename=\"{payslip.profile.ippis_no}_payslip.pdf\""
                     return response
                 else:
                     return HttpResponse("Payslip has no associated file")

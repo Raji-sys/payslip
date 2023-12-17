@@ -34,13 +34,22 @@ def process_payslip(pdf_path):
             Pdf_writer.add_page(page)
 
             # Save the new PDF to Payslip model
-            payslip_file_path = f'{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
+            payslip_file_path = f'media/payslips/{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
             with open(payslip_file_path, 'wb') as payslip_file:
                 Pdf_writer.write(payslip_file)
                 payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
-                payslip.save()
                 payslip_file.close()
 
             print(f"Payslip created for: {profile.user.get_full_name} (Page {page_num + 1})")
         else:
-            print(f"Payslip already exists for: {profile.user.get_full_name} (Page {page_num + 1})")
+            payslip=Payslip.objects.get(profile=profile)
+            Pdf_writer=PdfWriter()
+            Pdf_writer.add_page(page)
+
+            payslip_file_path = f'media/payslips/{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
+            with open(payslip_file_path, 'wb') as payslip_file:
+                Pdf_writer.write(payslip_file)
+                payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
+                payslip_file.close()
+            print(f"Payslip updated for: {profile.user.get_full_name} (Page {page_num + 1})")
+ 

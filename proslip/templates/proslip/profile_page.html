@@ -26,7 +26,10 @@
 <ul>
   {%for i in payslips %}
   <li>
-    <a href="{%url 'download_pdf' i.id %}" target="_blank">View Payslip</a>
+    <a href="{%url 'view_pdf' i.id %}" target="_blank">View Payslip</a>
+  </li>
+  <li>
+    <a href="{{i.file.url}}" target="_blank">View</a>
   </li>
   <li>
     <a href="{%url 'download_pdf' i.id %}" download="{{i.profile.ippis_no}}_payslip.pdf">Download Payslip</a>

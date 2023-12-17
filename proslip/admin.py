@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile
+from .models import Profile, Payslip
 
 admin.site.site_header="PRO PAYSLIP ADMIN"
 admin.site.index_title="PRO PAYSLIP"
@@ -19,4 +19,14 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ['full_name','file_no','ippis_no','dept_or_unit','phone_no']
     list_filter = ['dept_or_unit']
     search_fields = ['dept_or_unit']
+    list_per_page = 10
+
+
+@admin.register(Payslip)
+class PayslipAdmin(admin.ModelAdmin):
+    # form=ProfileForm
+    # readonly_fields=['ippis_no',]
+    list_display = ['file','profile','id']
+    list_filter = []
+    search_fields = []
     list_per_page = 10
