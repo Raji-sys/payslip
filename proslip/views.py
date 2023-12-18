@@ -52,6 +52,16 @@ class DownloadPDFView(View):
         response['Content-Disposition'] = f'attachment; filename="{payslip.file.name}"'
         return response
 
+
+class PDFView(View):
+    def get(self, request, payslip_id):
+        payslip = get_object_or_404(Payslip, id=payslip_id)
+
+        # Set the appropriate response headers for file download
+        response = FileResponse(open(payslip.file.path, 'rb'), content_type='application/pdf')
+        return response
+
+
 def generate_filename(profile, page_num):
     user_username = profile.user.username
     month_year = timezone.now().strftime('%B_%Y')

@@ -29,7 +29,7 @@
       <a href="{% url 'download_pdf' i.id %}" download="{{ i.profile.ippis_no }}_payslip.pdf">Download Payslip</a>
     </li>
     <li>
-       <a href="{{i.file.url}}">me</a>
+       <a href="{% url 'view_pdf' i.id %}">view</a>
     </li>
   {% endfor %}
 </ul>
