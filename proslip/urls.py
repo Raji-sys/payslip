@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import CustomLoginView, ProfilePageView, UserRegistrationView, CustomLogoutView, StaffListView,DocView, PayslipUploadView, DownloadPDFView, ViewPdfView
+from .views import CustomLoginView, ProfilePageView, UserRegistrationView, CustomLogoutView, StaffListView,DocView, PayslipUploadView, DownloadPDFView
 from . import views
 
 
@@ -9,7 +9,6 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('upload-payslip/', PayslipUploadView.as_view(), name='upload_payslip'),
     path('download-pdf/<int:payslip_id>/', DownloadPDFView.as_view(), name='download_pdf'),
-    path('view-pdf/<int:payslip_id>/', ViewPdfView.as_view(), name='view_pdf'),
     path('register/', UserRegistrationView.as_view(), name='register'),
     path('documentation/<int:pk>/', DocView.as_view(), name='doc'),
     path('profile/<str:username>/',ProfilePageView.as_view(), name='profile_page'),

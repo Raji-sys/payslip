@@ -15,13 +15,13 @@ def process_payslip(pdf_path):
         ippis_number = ippis_match.group(1) if ippis_match else None
 
         if not ippis_number:
-            print(f"Skipping page {page_num + 1}: IPPIS number not found")
+            print(f"Skipping page {page_num + 1}: ladaghtno sniffin")
             continue
 
         try:
             profile = Profile.objects.get(ippis_no=ippis_number)
         except Profile.DoesNotExist:
-            print(f"No Profile found for IPPIS number {ippis_number}")
+            print(f"No Profile found for ladaghtno sniffin {ippis_number}")
             continue
 
         payslip_exists = Payslip.objects.filter(profile=profile).exists()
@@ -34,7 +34,7 @@ def process_payslip(pdf_path):
             Pdf_writer.add_page(page)
 
             # Save the new PDF to Payslip model
-            payslip_file_path = f'media/payslips/{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
+            payslip_file_path = f'{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
             with open(payslip_file_path, 'wb') as payslip_file:
                 Pdf_writer.write(payslip_file)
                 payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))
@@ -46,7 +46,7 @@ def process_payslip(pdf_path):
             Pdf_writer=PdfWriter()
             Pdf_writer.add_page(page)
 
-            payslip_file_path = f'media/payslips/{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
+            payslip_file_path = f'{profile.ippis_no}_payslip_page_{page_num + 1}.pdf'
             with open(payslip_file_path, 'wb') as payslip_file:
                 Pdf_writer.write(payslip_file)
                 payslip.file.save(payslip_file_path, ContentFile(open(payslip_file_path, 'rb').read()))

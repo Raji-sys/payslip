@@ -13,13 +13,108 @@ from proslip.filters import ProfileFilter
 from django.contrib.auth import get_user_model
 from django.views import View
 from .script import process_payslip
-from django.conf import settings
 import os
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, FileResponse
 User = get_user_model()
+from django.utils import timezone
+from django.db import transaction
+import uuid
+from django.core.files.base import ContentFile
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from PyPDF2 import PdfWriter,PdfReader
+import re
 
 
+# views.py
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db import models, transaction
+from PyPDF2 import PdfReader, PdfWriter
+from django.urls import reverse
+from django.contrib.auth.models import User
+from django.utils import timezone
+from .models import Payslip, Profile
+from .forms import PayslipUploadForm
+
+class DownloadPDFView(View):
+    def get(self, request, payslip_id):
+        payslip = get_object_or_404(Payslip, id=payslip_id)
+
+        # Set the appropriate response headers for file download
+        response = HttpResponse(payslip.file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{payslip.file.name}"'
+        return response
+
+def generate_filename(profile, page_num):
+    user_username = profile.user.username
+    month_year = timezone.now().strftime('%B_%Y')
+    filename = f"{user_username}_Payslip_{month_year}_Page_{page_num}.pdf"
+    return filename
+
+@transaction.atomic
+def process_payslip(pdf_path):
+    try:
+        pdf = PdfReader(pdf_path)
+    except Exception as e:
+        # Handle the specific exception for PDF reading error
+        print(f"Error reading PDF: {e}")
+        return
+
+    for page_num in range(len(pdf.pages)):
+        page = pdf.pages[page_num]
+        text_content = page.extract_text()
+
+        ippis_match = re.search(r'(\d{6})', text_content)
+        ippis_number = ippis_match.group(1) if ippis_match else None
+
+        if not ippis_number:
+            print(f"Skipping page {page_num + 1}: ladaghtno sniffin")
+            continue
+
+        try:
+            profile = Profile.objects.get(ippis_no=ippis_number)
+        except Profile.DoesNotExist:
+            print(f"No Profile found for ladaghtno sniffin {ippis_number}")
+            continue
+
+        payslip_exists = Payslip.objects.filter(profile=profile).exists()
+        payslip_filename = generate_filename(profile, page_num)
+        payslip_file_path = os.path.join(settings.MEDIA_ROOT, 'payslips', payslip_filename)
+
+        if not payslip_exists:
+            payslip = Payslip(profile=profile)
+
+            # Create a new PDF using PyPDF2 PdfWriter
+            pdf_writer = PdfWriter()
+            pdf_writer.add_page(page)
+
+            # Save the new PDF to Payslip model    
+            with open(payslip_file_path, 'wb') as payslip_file:
+                pdf_writer.write(payslip_file)
+                payslip.file.name = payslip_file_path
+                payslip.save()
+            print(f"Payslip created for: {profile.user.get_full_name()} (Page {page_num + 1})")
+        else:
+            payslip = Payslip.objects.get(profile=profile)
+            pdf_writer = PdfWriter()
+            pdf_writer.add_page(page)
+
+            # Save the new PDF to Payslip model
+            with open(payslip_file_path, 'wb') as payslip_file:
+                pdf_writer.write(payslip_file)
+
+            # Assign the file to the Payslip model
+            payslip.file.name = payslip_file_path
+            payslip.save()
+
+            print(f"Payslip updated for: {profile.user.get_full_name()} (Page {page_num + 1})")
 
 class PayslipUploadView(View):
     template_name = "proslip/upload_payslip.html"
@@ -34,52 +129,61 @@ class PayslipUploadView(View):
             payslip_file = request.FILES['payslip_file']
 
             # Save the uploaded payslip file
-            file_path = f'media/uploaded_payslip/{payslip_file.name}'
-            with open(file_path, 'wb') as destination:
-                for chunk in payslip_file.chunks():
-                    destination.write(chunk)
-
-            process_payslip(file_path)
-            return redirect('success')
+            file_path = os.path.join(settings.MEDIA_ROOT, 'uploaded_payslip', f'{uuid.uuid4()}_{payslip_file.name}')
+            try:
+                with FileSystemStorage(location=file_path).open(file_path, 'wb') as destination:
+                    for chunk in payslip_file.chunks():
+                        destination.write(chunk)
+                process_payslip(file_path)
+                return redirect('success')
+            except Exception as e:
+                print(f"Error processing payslip: {e}")
+                return HttpResponse("Error processing payslip.")
         else:
             return render(request, self.template_name, {'form': form})
-        
 
-class ViewPdfView(View):
-    def get(self,request,payslip_id,*args,**kwargs):
-        payslip=get_object_or_404(Payslip, id=payslip_id)
+@receiver(post_save, sender=Payslip)
+def process_payslip_on_save(sender, instance, created, **kwargs):
+    if created:
+        process_payslip(instance.file.path)
 
-        if not request.user.is_superuser and request.user.profile != payslip.profile:
-            raise PermissionDenied
-        if payslip.file:
-            response=FileResponse(payslip.file.read(),content_type='application/pdf')
-            return response
-        else:
-            return HttpResponse("Payslip is not found")
+# class DownloadPDFView(View):
+#     def get(self, request, payslip_id):
+#         payslip = get_object_or_404(Payslip, id=payslip_id)
 
+#         # Set the appropriate response headers for file download
+#         response = FileResponse(open(payslip.file.path, 'rb'))
+#         response['Content-Disposition'] = f'attachment; filename="{payslip.file.name}"'
+#         return response
+    
+# class DownloadPDFView(View):
+#     def get(self, request, *args, **kwargs):
+#         user = request.user
+#         if user.is_superuser or hasattr(User, 'profile'):
+#             if user.is_superuser:
+#                 profile = get_object_or_404(Profile, user__username=kwargs['username'])
+#             else:
+#                 profile = user.profile
 
+#             try:
+#                 payslip = Payslip.objects.get(profile=profile)
+#                 if payslip.file:
+#                     file_path = payslip.file.path
 
-class DownloadPDFView(View):
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        if user.is_superuser or hasattr(User, 'profile'):
-            if user.is_superuser:
-                profile = get_object_or_404(Profile, user__username=kwargs['username'])
-            else:
-                profile = user.profile
-            try:
-                payslip = Payslip.objects.get(profile=profile)
-                if payslip.file:
-                    response = FileResponse(payslip.file, content_type='application/pdf')
-                    response['Content-Disposition'] = f"attachment; filename=\"{payslip.profile.ippis_no}_payslip.pdf\""
-                    return response
-                else:
-                    return HttpResponse("Payslip has no associated file")
-            except Payslip.DoesNotExist:
-                return HttpResponse("Payslip not found")
-        else:
-            return HttpResponse("User has no profile")
+#                     if file_path:
+#                         print(f"File path: {file_path}")  # Add this line to print the file path
 
+#                         response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+#                         response['Content-Disposition'] = f"attachment; filename=\"{payslip.profile.ippis_no}_payslip.pdf\""
+#                         return response
+#                     else:
+#                         return HttpResponse("Payslip file path is None")
+#                 else:
+#                     return HttpResponse("Payslip has no associated file")
+#             except Payslip.DoesNotExist:
+#                 return HttpResponse("Payslip not found")
+#         else:
+#             return HttpResponse("User has no profile")
 
 
 def success(request):

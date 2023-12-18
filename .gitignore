@@ -3,3 +3,7 @@
 /manage.py
 /pyvenv.cfg
 /Scripts
+/static
+/media
+/theme
+/db.sqlite
