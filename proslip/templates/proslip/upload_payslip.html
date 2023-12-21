@@ -6,12 +6,12 @@
     <section class=" text-center border-b-2 border-green-700 text-sm">
         <p class="text-green-800 uppercase max-sm:text-lg text-xl">Upload Payslip</p> 
 <div class="flex justify-center text-md text-blue-500">
-          {% if messages %}
+             {% if messages %}
           {%for m in messages%}
-         <p>{% if m.tags%} class="{{m.tags}}"{%endif%}>{{m}}</p>
-         {%endfor%}
+         <p {% if m.tags%} class="{{m.tags}}"{%endif%}>{{m}}</p>
+           {%endfor%}
           {% endif %}
-    </div>
+        </div>
 </section>      
 <form method="post" enctype="multipart/form-data" class="flex flex-col">
   {% csrf_token %}

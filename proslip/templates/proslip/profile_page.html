@@ -13,7 +13,7 @@
   <h1 class="text-xl text-black text-center p-2 shadow-sm rounded-xl mt-20 ">{{profile.user.get_full_name|default_if_none:''|upper}} </h1>
 <h1>
   {%if not profile.file_no %}
-  <a href="{%url 'doc' profile.user.pk %}">start documentation</a>
+  <a href="{%url 'doc' profile.user.pk %}">complete profile</a>
   {%endif%}
 </h1>
 <p>

@@ -47,7 +47,6 @@ class DownloadPDFView(View):
     def get(self, request, payslip_id):
         payslip = get_object_or_404(Payslip, id=payslip_id)
 
-        # Set the appropriate response headers for file download
         response = HttpResponse(payslip.file, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{payslip.file.name}"'
         return response
@@ -57,7 +56,6 @@ class PDFView(View):
     def get(self, request, payslip_id):
         payslip = get_object_or_404(Payslip, id=payslip_id)
 
-        # Set the appropriate response headers for file download
         response = FileResponse(open(payslip.file.path, 'rb'), content_type='application/pdf')
         return response
 
@@ -126,6 +124,7 @@ def process_payslip(pdf_path):
 
             print(f"Payslip updated for: {profile.user.get_full_name()} (Page {page_num + 1})")
 
+
 class PayslipUploadView(View):
     template_name = "proslip/upload_payslip.html"
 
@@ -151,6 +150,7 @@ class PayslipUploadView(View):
                 return HttpResponse("Error processing payslip.")
         else:
             return render(request, self.template_name, {'form': form})
+
 
 @receiver(post_save, sender=Payslip)
 def process_payslip_on_save(sender, instance, created, **kwargs):
@@ -303,27 +303,27 @@ class DocView(UpdateView):
 
 
 
-# @method_decorator(login_required(login_url='login'), name='dispatch')
-# class UpdateProfileView(UpdateView):
-#     model=Profile
-#     template_name = 'proslip/update_profile.html'
-#     form_class=ProfileForm
-#     success_url=reverse_lazy('profile_page')
+@method_decorator(login_required(login_url='login'), name='dispatch')
+class UpdateProfileView(UpdateView):
+    model=Profile
+    template_name = 'proslip/update_profile.html'
+    form_class=ProfileForm
+    success_url=reverse_lazy('profile_page')
 
-#     def get_success_url(self):
-#         return reverse_lazy('profile_page', kwargs={'username': self.object.user})
+    def get_success_url(self):
+        return reverse_lazy('profile_page', kwargs={'username': self.object.user})
 
-#     def form_valid(self,form):
-#         if form.is_valid():
-#             form.save()
-#             messages.success(self.request, 'User Information Updated Successfully')
-#             return super().form_valid(form)
-#         else:
-#             return self.form_invalid(form)
+    def form_valid(self,form):
+        if form.is_valid():
+            form.save()
+            messages.success(self.request, 'User Information Updated Successfully')
+            return super().form_valid(form)
+        else:
+            return self.form_invalid(form)
 
-#     def form_invalid(self,form):
-#         messages.error(self.request,'Please Correct the error')
-#         return self.render_to_response(self.get_context_data(form=form))
+    def form_invalid(self,form):
+        messages.error(self.request,'Please Correct the error')
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 
