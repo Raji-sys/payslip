@@ -43,6 +43,31 @@ from django.utils import timezone
 from .models import Payslip, Profile
 from .forms import PayslipUploadForm
 
+
+
+def index(request):
+    return render(request, 'index.html')
+
+
+def log_required(view_function, redirect_to=None):
+    if redirect_to is None:
+        redirect_to = '/'
+    return user_passes_test(lambda u: not u.is_authenticated,login_url=redirect_to)(view_function)
+
+def reg_required(view_function, redirect_to=None):
+    if redirect_to is None:
+        redirect_to = '/'
+    return user_passes_test(lambda u: not u.is_authenticated or u.is_superuser,login_url=redirect_to)(view_function)
+
+def superuser_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return render(request,'access_denied.html')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+@method_decorator(login_required, name='dispatch')
 class DownloadPDFView(View):
     def get(self, request, payslip_id):
         payslip = get_object_or_404(Payslip, id=payslip_id)
@@ -52,6 +77,7 @@ class DownloadPDFView(View):
         return response
 
 
+@method_decorator(login_required, name='dispatch')
 class PDFView(View):
     def get(self, request, payslip_id):
         payslip = get_object_or_404(Payslip, id=payslip_id)
@@ -83,13 +109,13 @@ def process_payslip(pdf_path):
         ippis_number = ippis_match.group(1) if ippis_match else None
 
         if not ippis_number:
-            print(f"Skipping page {page_num + 1}: ladaghtno sniffin")
+            print(f"+x^****^x+ {page_num + 1}")
             continue
 
         try:
             profile = Profile.objects.get(ippis_no=ippis_number)
         except Profile.DoesNotExist:
-            print(f"No Profile found for ladaghtno sniffin {ippis_number}")
+            print(f"No match for: {ippis_number}")
             continue
 
         payslip_exists = Payslip.objects.filter(profile=profile).exists()
@@ -108,7 +134,7 @@ def process_payslip(pdf_path):
                 pdf_writer.write(payslip_file)
                 payslip.file.name = payslip_file_path
                 payslip.save()
-            print(f"Payslip created for: {profile.user.get_full_name()} (Page {page_num + 1})")
+            print(f"match found: payslip created for: {profile.user.get_full_name()} (Page {page_num + 1})")
         else:
             payslip = Payslip.objects.get(profile=profile)
             pdf_writer = PdfWriter()
@@ -122,9 +148,10 @@ def process_payslip(pdf_path):
             payslip.file.name = payslip_file_path
             payslip.save()
 
-            print(f"Payslip updated for: {profile.user.get_full_name()} (Page {page_num + 1})")
+            print(f"match found: updated playslip for: {profile.user.get_full_name()} (Page {page_num + 1})")
 
 
+@method_decorator(superuser_required,name='dispatch')
 class PayslipUploadView(View):
     template_name = "proslip/upload_payslip.html"
 
@@ -157,67 +184,9 @@ def process_payslip_on_save(sender, instance, created, **kwargs):
     if created:
         process_payslip(instance.file.path)
 
-# class DownloadPDFView(View):
-#     def get(self, request, payslip_id):
-#         payslip = get_object_or_404(Payslip, id=payslip_id)
-
-#         # Set the appropriate response headers for file download
-#         response = FileResponse(open(payslip.file.path, 'rb'))
-#         response['Content-Disposition'] = f'attachment; filename="{payslip.file.name}"'
-#         return response
-    
-# class DownloadPDFView(View):
-#     def get(self, request, *args, **kwargs):
-#         user = request.user
-#         if user.is_superuser or hasattr(User, 'profile'):
-#             if user.is_superuser:
-#                 profile = get_object_or_404(Profile, user__username=kwargs['username'])
-#             else:
-#                 profile = user.profile
-
-#             try:
-#                 payslip = Payslip.objects.get(profile=profile)
-#                 if payslip.file:
-#                     file_path = payslip.file.path
-
-#                     if file_path:
-#                         print(f"File path: {file_path}")  # Add this line to print the file path
-
-#                         response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-#                         response['Content-Disposition'] = f"attachment; filename=\"{payslip.profile.ippis_no}_payslip.pdf\""
-#                         return response
-#                     else:
-#                         return HttpResponse("Payslip file path is None")
-#                 else:
-#                     return HttpResponse("Payslip has no associated file")
-#             except Payslip.DoesNotExist:
-#                 return HttpResponse("Payslip not found")
-#         else:
-#             return HttpResponse("User has no profile")
-
 
 def success(request):
     return render(request,'success.html')
-
-def log_required(view_function, redirect_to=None):
-    if redirect_to is None:
-        redirect_to = '/'
-    return user_passes_test(lambda u: not u.is_authenticated,login_url=redirect_to)(view_function)
-
-def reg_required(view_function, redirect_to=None):
-    if redirect_to is None:
-        redirect_to = '/'
-    return user_passes_test(lambda u: not u.is_authenticated or u.is_superuser,login_url=redirect_to)(view_function)
-
-def superuser_required(view_func):
-    def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated or not request.user.is_superuser:
-            return render(request,'access_denied.html')
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view
-
-def index(request):
-    return render(request, 'index.html')
 
 
 @method_decorator(log_required, name='dispatch')
@@ -254,6 +223,7 @@ class UserRegistrationView(CreateView):
             return self.form_invalid(form)
 
 
+@method_decorator(login_required, name='dispatch')
 class DocView(UpdateView):
     model = User
     template_name = 'doc.html'
@@ -303,27 +273,27 @@ class DocView(UpdateView):
 
 
 
-@method_decorator(login_required(login_url='login'), name='dispatch')
-class UpdateProfileView(UpdateView):
-    model=Profile
-    template_name = 'proslip/update_profile.html'
-    form_class=ProfileForm
-    success_url=reverse_lazy('profile_page')
+# @method_decorator(login_required(login_url='login'), name='dispatch')
+# class UpdateProfileView(UpdateView):
+#     model=Profile
+#     template_name = 'proslip/update_profile.html'
+#     form_class=ProfileForm
+#     success_url=reverse_lazy('profile_page')
 
-    def get_success_url(self):
-        return reverse_lazy('profile_page', kwargs={'username': self.object.user})
+#     def get_success_url(self):
+#         return reverse_lazy('profile_page', kwargs={'username': self.object.user})
 
-    def form_valid(self,form):
-        if form.is_valid():
-            form.save()
-            messages.success(self.request, 'User Information Updated Successfully')
-            return super().form_valid(form)
-        else:
-            return self.form_invalid(form)
+#     def form_valid(self,form):
+#         if form.is_valid():
+#             form.save()
+#             messages.success(self.request, 'User Information Updated Successfully')
+#             return super().form_valid(form)
+#         else:
+#             return self.form_invalid(form)
 
-    def form_invalid(self,form):
-        messages.error(self.request,'Please Correct the error')
-        return self.render_to_response(self.get_context_data(form=form))
+#     def form_invalid(self,form):
+#         messages.error(self.request,'Please Correct the error')
+#         return self.render_to_response(self.get_context_data(form=form))
 
 
 
